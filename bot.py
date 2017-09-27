@@ -1,6 +1,7 @@
 import settings
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import telegram
+import currency
 
 def command_start(bot, update):
     chat_id = update.message.chat.id
@@ -17,6 +18,8 @@ def chat_bot(bot, update):
         keyboards_menu(bot, chat_id, '1')
     elif text == 'Курсы валют':
         keyboards_menu(bot, chat_id, '2')
+    elif str.lower(text) in currency.CURRENCY_CODES:
+        update.message.reply_text(currency.get_currency_rates(text))
     else:
         update.message.reply_text(text)
 
@@ -39,6 +42,7 @@ def default_keyboards(bot, chat_id):
     bot.send_message(chat_id=chat_id,
                     text='Вы в главном меню',
                     reply_markup=reply_markup)
+
 
 def main():
     updater = Updater(settings.TELEGRAM_API_KEY)    

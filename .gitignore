@@ -1,4 +1,5 @@
 env/
+data/*.txt
 __pycache__
 settings.py
 test.py
