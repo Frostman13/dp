@@ -2,16 +2,25 @@ import settings
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import telegram
 import currency
+# Подключаем лог
+import logging
+logging.basicConfig(format='%(name)s - %(asctime)s - %(levelname)s - %(message)s',
+                    level=logging.INFO,
+                    filename='marketscreener_bot.log'
+                    )
+
 
 def command_start(bot, update):
     chat_id = update.message.chat.id
     start_text = 'Привет'
     update.message.reply_text(start_text)
+    logging.info('Пользователь {} ({} {}) нажал /start'.format(update.message.chat.username, update.message.chat.first_name, update.message.chat.last_name))
     default_keyboards(bot, chat_id)
 
 def chat_bot(bot, update):
     chat_id = update.message.chat.id
     text = update.message.text
+    logging.info('Пользователь {}: {}'.format(update.message.chat.username,text))
     if text == 'В главное меню':
         defaul_keyboards(bot, chat_id)
     elif text == 'Подписки':
@@ -55,5 +64,6 @@ def main():
     updater.start_polling()
     updater.idle()
 
-if __name__ == '__main__':  
+if __name__ == '__main__':
+    logging.info('Bot started')
     main()
