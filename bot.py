@@ -6,7 +6,7 @@ import currency
 import logging
 logging.basicConfig(format='%(name)s - %(asctime)s - %(levelname)s - %(message)s',
                     level=logging.INFO,
-                    filename='marketscreener_bot.log'
+                    filename='bot.log'
                     )
 
 
