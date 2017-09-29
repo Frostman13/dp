@@ -22,7 +22,7 @@ def chat_bot(bot, update):
     text = update.message.text
     logging.info('Пользователь {}: {}'.format(update.message.chat.username,text))
     if text == 'В главное меню':
-        defaul_keyboards(bot, chat_id)
+        default_keyboards(bot, chat_id)
     elif text == 'Подписки':
         keyboards_menu(bot, chat_id, '1')
     elif text == 'Курсы валют':
