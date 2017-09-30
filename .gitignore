@@ -2,5 +2,5 @@ env/
 data/*.txt
 data/*.xml
 __pycache__
-settings.py
+settings_local.py
 test*.py
