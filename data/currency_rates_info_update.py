@@ -6,7 +6,6 @@ from datetime import datetime, date, timedelta
 CURRENCY_URL = 'https://www.cbr.ru/scripts/XML_daily.asp'
 FOLDER_PATH = '/home/ubuntu/diplom_project/data/' # если запускается локально, обнулить
 # FOLDER_PATH = '' 
-TIME_DELTA = timedelta(hours=3)
 
 def get_xml_file_name(url):
     url_split = url.split("/")[-1]

@@ -1,1 +1,3 @@
-﻿pip3 install python-telegram-bot
+﻿pip3 install python-telegram-bot # библиотека по работе с Telegram
+pip3 install pytz # библиотека по работе с timezone
+pip3 install sqlalchemy # библиотека по работе с простыми БД SQL
