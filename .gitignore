@@ -4,6 +4,8 @@ __pycache__/
 data/*.txt
 data/*.xml
 
+logs/*.txt
+
 user_db/__init__.py
 
 settings_local.py
