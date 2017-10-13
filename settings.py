@@ -5,5 +5,5 @@ try:
 except ImportError:
     pass
 
-parse_link = None
+check_parse_links = [None, None]
 RBC_RSS = 'http://static.feed.rbc.ru/rbc/logical/footer/news.rss'

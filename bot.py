@@ -85,25 +85,27 @@ def default_keyboards(bot, chat_id):
 
 def callback_news_minute(bot, job):
     parse_from_rss = feedparser.parse(settings.RBC_RSS)
+    news_in_text = 5
     news = list()
-    for news_counter in range(0, 5):
+    for news_counter in range(0, news_in_text):
         news.append(parse_from_rss.entries[news_counter].link)
 
-    if settings.parse_link not in news:
-        settings.parse_link = news[0]
+    if (settings.check_parse_links[0] not in news) and (settings.check_parse_links[1] not in news):
+        settings.check_parse_links[0] = news[0]
+        settings.check_parse_links[1] = news[1]
         text = ''
         subscribers = work.subscribers_list('РБК')
         subscribers.append('@rbknews1')
-        for news_counter in range(0, 5):
+        for news_counter in range(0, news_in_text):
             text = text + parse_from_rss.entries[news_counter].title + '\n' + news[news_counter] + '\n'
         for sub in subscribers:
             bot.send_message(chat_id=sub,
                              text=text)
 
     with open('logs/sendnews.txt', "a") as local_file:
-        local_file.write('{}: link: {}\n'.format(datetime.now().strftime('%Y.%m.%d %H.%M.%S'), settings.parse_link))
+        local_file.write('{}: link1: {}\n'.format(datetime.now().strftime('%Y.%m.%d %H.%M.%S'), settings.check_parse_links[0]))
+        local_file.write('{}: link2: {}\n'.format(datetime.now().strftime('%Y.%m.%d %H.%M.%S'), settings.check_parse_links[1]))
         local_file.write('{}: {}\n'.format(datetime.now().strftime('%Y.%m.%d %H.%M.%S'), 'repeat'))
-
 
 def main():
     updater = Updater(settings.TELEGRAM_API_KEY)
