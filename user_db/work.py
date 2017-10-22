@@ -72,7 +72,7 @@ def subscribers_list(title):
     result = list()
     s = Subscription
     select = s.query.filter(s.title == title,
-                            s.is_active is True
+                            s.is_active == 1
                             ).all()
     for sub in select:
         result.append(sub.user_id)

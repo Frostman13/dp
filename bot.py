@@ -140,6 +140,7 @@ def sent_news(bot, job):
     if news_counter > 4:
         text = ''
         subscribers = work.subscribers_list('РБК')
+        subscribers.append('@rbknews1')
         for news in unsent_news:
             text = text + news.news_title + '\n' + news.news_short_link + '\n'
         for sub in subscribers:
@@ -147,7 +148,7 @@ def sent_news(bot, job):
                              text=text)
         work.mark_sent_news(unsent_news)
         with open('logs/sendnews.txt', "a") as local_file:
-            local_file.write('{}: News sent\n'.format(now_time))
+            local_file.write('{}: News sent to {}\n'.format(now_time, subscribers))
     else:
         with open('logs/sendnews.txt', "a") as local_file:
             local_file.write('{}: Not enough news\n{}\n'.format(now_time, unsent_news))
@@ -161,8 +162,8 @@ def main():
     dp.add_handler(CommandHandler("start", command_start))
 
     j = updater.job_queue
-    job_collect_news = j.run_repeating(callback_collect_news, interval=120, first=0)
-    job_sent_news = j.run_repeating(sent_news, interval=120, first=0)
+    job_collect_news = j.run_repeating(callback_collect_news, interval=180, first=0)
+    job_sent_news = j.run_repeating(sent_news, interval=180, first=0)
 
     updater.start_polling()
     updater.idle()
