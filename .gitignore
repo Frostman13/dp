@@ -5,6 +5,7 @@ data/*.txt
 data/*.xml
 
 logs/*.txt
+logs/*.log
 
 user_db/__init__.py
 
