@@ -53,7 +53,7 @@ def chat_bot(bot, update):
     # print(update)
     chat_id = update.message.chat.id
     text = update.message.text
-    today = datetime.now().strftime("%d.%m.%Y")
+    today = datetime.now(timezone('Europe/Moscow')).replace(tzinfo=None).strftime("%d.%m.%Y")
     logging.info('Пользователь {}: {}'.format(update.message.chat.username, text))
     if text == 'В главное меню':
         default_keyboards(bot, chat_id)
