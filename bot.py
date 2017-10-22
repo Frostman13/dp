@@ -150,7 +150,7 @@ def sent_news(bot, job):
             local_file.write('{}: News sent\n'.format(now_time))
     else:
         with open('logs/sendnews.txt', "a") as local_file:
-            local_file.write('{}: Not enough news\n'.format(now_time))
+            local_file.write('{}: Not enough news\n{}\n'.format(now_time, unsent_news))
 
 
 def main():
