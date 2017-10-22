@@ -99,7 +99,7 @@ def mark_sent_news(news_list):
 
 def last_news(counter, title):
     n = News
-    result = n.query.filter(n.title == title).order_by(n.time)[:5]
+    result = n.query.filter(n.title == title).order_by(n.time)[-counter:]
     return result
 
 
