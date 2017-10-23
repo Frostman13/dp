@@ -82,7 +82,7 @@ def subscribers_list(title):
 def unsent_news_list(title):
     result = list()
     n = News
-    result = n.query.filter(n.is_sent == 0).order_by(n.time).all()
+    result = n.query.filter(n.is_sent == 0).order_by(n.date, n.time).all()
     return result
 
 

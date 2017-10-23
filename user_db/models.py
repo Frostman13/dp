@@ -67,7 +67,7 @@ class News(Base):
         self.is_sent = is_sent
 
     def __repr__(self):
-        return '<News {} {} {} {} {}>'.format(self.title, self.date, self.time, self.news_title,
+        return '<News {} {} {} {} {} {} {}>'.format(self.title, self.date, self.time, self.news_title,
                                               self.news_link, self.news_short_link, self.is_sent)
 
 

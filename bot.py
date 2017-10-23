@@ -67,7 +67,7 @@ def chat_bot(bot, update):
         else:
             keyboards_menu(bot, chat_id, '3off')
     elif text == 'Последние новости РБК':
-        update.message.reply_text(rbc_last_news(5))
+        rbc_last_news(bot, 5, chat_id)
     elif text == 'Включить РБК':
         add_sub = work.subscriptions_db_add_sub(chat_id, 'РБК', True)
         update.message.reply_text('Подписка включена')
@@ -123,12 +123,14 @@ def callback_collect_news(bot, job):
         settings.check_rbc_links[news_counter] = news_link
 
 
-def rbc_last_news(counter):
+def rbc_last_news(bot, counter, chat_id):
     text = ''
     last_news = work.last_news(5, 'РБК')
     for news in last_news:
         text = text + news.news_title + '\n' + news.news_short_link + '\n'
-    return text
+    if text != '':
+        bot.send_message(chat_id=chat_id,
+                         text=text, disable_web_page_preview=True)
 
 
 def sent_news(bot, job):
@@ -145,7 +147,7 @@ def sent_news(bot, job):
             text = text + news.news_title + '\n' + news.news_short_link + '\n'
         for sub in subscribers:
             bot.send_message(chat_id=sub,
-                             text=text)
+                             text=text, disable_web_page_preview=True)
         work.mark_sent_news(unsent_news)
         with open('logs/sendnews.txt', "a") as local_file:
             local_file.write('{}: News sent to {}\n'.format(now_time, subscribers))
