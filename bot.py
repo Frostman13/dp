@@ -5,6 +5,7 @@ from datetime import datetime
 from pytz import timezone
 import telegram
 import currency
+from bot_keyboards import keyboards_menu_buttons, keyboard_sub_switch
 import feedparser
 import requests
 import json
@@ -26,14 +27,17 @@ def command_start(bot, update):
     username = user_chat.username
 
     add_user = work.users_db_add_user(chat_id, first_name, last_name, username)
-    logging.info('Попытка добавления пользователя {}: {}'.format(chat_id, add_user))
+    logging.info('Попытка добавления пользователя {}: {}'
+                 .format(chat_id, add_user))
     update.message.reply_text('Привет')
-    logging.info('Пользователь {} {} ({} {}) нажал /start'.format(chat_id, first_name, last_name, username))
-    default_keyboards(bot, chat_id)
+    logging.info('Пользователь {} {} ({} {}) нажал /start'
+                 .format(chat_id, first_name, last_name, username))
+    keyboards_menu(bot, chat_id)
 
 
 def google_short_url(url):
-    post_url = 'https://www.googleapis.com/urlshortener/v1/url?key={}'.format(settings.GOOGLE_SHORTENER_API_KEY)
+    post_url = ('https://www.googleapis.com/urlshortener/v1/url?key={}'
+                .format(settings.GOOGLE_SHORTENER_API_KEY))
     input_url = {'longUrl': url}
     headers = {'content-type': 'application/json'}
     response = requests.post(post_url, data=json.dumps(input_url), headers=headers)
@@ -50,110 +54,128 @@ def get_time_diff(local_timezone):
 
 
 def chat_bot(bot, update):
-    # print(update)
     chat_id = update.message.chat.id
     text = update.message.text
     today = datetime.now(timezone('Europe/Moscow')).replace(tzinfo=None).strftime("%d.%m.%Y")
     logging.info('Пользователь {}: {}'.format(update.message.chat.username, text))
+
     if text == 'В главное меню':
-        default_keyboards(bot, chat_id)
-    elif text == 'Подписки':
+        keyboards_menu(bot, chat_id)
+    elif text in ['Подписки', 'В подписки']:
         keyboards_menu(bot, chat_id, '1')
     elif text == 'Курсы валют':
         keyboards_menu(bot, chat_id, '2')
-    elif text == 'РБК':
-        if work.subscription_check(chat_id, 'РБК') is False:
-            keyboards_menu(bot, chat_id, '3on')
+    elif text == 'Мои подписки':
+        bot.send_message(chat_id=chat_id,
+                         text=work.user_subscriptions(chat_id),
+                         parse_mode='HTML',)
+    elif text in ['РБК', 'Коммерсант']:
+        if work.subscription_check(chat_id, text) is False:
+            keyboards_menu(bot, chat_id, keyboard_sub_switch(text)[1])
         else:
-            keyboards_menu(bot, chat_id, '3off')
+            keyboards_menu(bot, chat_id, keyboard_sub_switch(text)[0])
     elif text == 'Последние новости РБК':
-        rbc_last_news(bot, 5, chat_id)
-    elif text == 'Включить РБК':
-        add_sub = work.subscriptions_db_add_sub(chat_id, 'РБК', True)
+        send_last_news(bot, 5, chat_id, 'РБК')
+    elif text == 'Последние новости Коммерсант':
+        send_last_news(bot, 3, chat_id, 'Коммерсант')
+    elif text in ['Включить РБК', 'Включить Коммерсант']:
+        title_name = text.split()[1]
+        add_sub = work.subscriptions_db_add_sub(chat_id, title_name, True)
         update.message.reply_text('Подписка включена')
-        keyboards_menu(bot, chat_id, '3off')
-    elif text == 'Выключить РБК':
-        add_sub = work.subscriptions_db_add_sub(chat_id, 'РБК', False)
-        update.message.reply_text('Подписка выключена')
-        keyboards_menu(bot, chat_id, '3on')
-    elif str.lower(text) in currency.CURRENCY_CODES:
+        keyboards_menu(bot, chat_id, keyboard_sub_switch(title_name)[0])
+    elif text in ['Выключить РБК', 'Выключить Коммерсант']:
+        title_name = text.split()[1]
+        add_sub = work.subscriptions_db_add_sub(chat_id, title_name, False)
+        update.message.reply_text('Подписка включена')
+        keyboards_menu(bot, chat_id, keyboard_sub_switch(title_name)[1])
+    elif text.lower() in currency.CURRENCY_CODES:
         update.message.reply_text(currency.get_currency_rates(text, today))
     else:
         update.message.reply_text(text)
 
 
 def keyboards_menu(bot, chat_id, keyboard_id=0):
-    if str(keyboard_id) != '0':
-        if str(keyboard_id) == '1':
-            keyboard = {'menu': [['РБК', 'Трэш', 'В главное меню']], 'text': 'Подписки'}
-        elif str(keyboard_id) == '2':
-            keyboard = {'menu': [['Доллар', 'Евро', 'В главное меню']], 'text': 'Курсы валют'}
-        elif str(keyboard_id) == '3on':
-            keyboard = {'menu': [['Включить РБК', 'Последние новости РБК', 'В главное меню']], 'text': 'Управление подпиской на РБК'}
-        elif str(keyboard_id) == '3off':
-            keyboard = {'menu': [['Выключить РБК', 'Последние новости РБК', 'В главное меню']], 'text': 'Управление подпиской на РБК'}
-        reply_markup = telegram.ReplyKeyboardMarkup(keyboard['menu'], resize_keyboard=True)
+        menu = keyboards_menu_buttons(keyboard_id).get('menu')
+        text = keyboards_menu_buttons(keyboard_id).get('text')
+        reply_markup = telegram.ReplyKeyboardMarkup(menu, resize_keyboard=True)
         bot.send_message(chat_id=chat_id,
-                         text=keyboard['text'],
+                         text=text,
                          reply_markup=reply_markup)
-    else:
-        keyboard = [['Подписки', 'Курсы валют']]
-        return keyboard
 
 
-def default_keyboards(bot, chat_id):
-    reply_markup = telegram.ReplyKeyboardMarkup(keyboards_menu(bot, chat_id), resize_keyboard=True)
-    bot.send_message(chat_id=chat_id,
-                     text='Вы в главном меню',
-                     reply_markup=reply_markup)
+def date_time_converter(pub_struct_time, timezone):
+    result = dict()
+    try:
+        news_time = datetime.fromtimestamp(mktime(pub_struct_time)) + get_time_diff(timezone)
+        result['date'] = '{}-{:02d}-{:02d}'.format(news_time.year, news_time.month, news_time.day)
+        result['time'] = '{:02d}:{:02d}'.format(news_time.hour, news_time.minute)
+    except TypeError:
+        result['date'] = None
+        result['time'] = None
+    return result
 
 
 def callback_collect_news(bot, job):
-    parse_from_rss = feedparser.parse(settings.RBC_RSS)
-    for news_counter in reversed(range(0, 5)):
-        news_link = parse_from_rss.entries[news_counter].link
-        if news_link not in settings.check_rbc_links:
-            title = 'РБК'
-            news_time = datetime.fromtimestamp(mktime(parse_from_rss.entries[news_counter].published_parsed)) + get_time_diff('Europe/Moscow')
-            date = '{}-{:02d}-{:02d}'.format(news_time.year, news_time.month, news_time.day)
-            time = '{:02d}:{:02d}'.format(news_time.hour, news_time.minute)
-            news_title = parse_from_rss.entries[news_counter].title
-            news_short_link = google_short_url(news_link)
-            add_news = work.news_db_add_news(title, date, time, news_title, news_link, news_short_link)
-        settings.check_rbc_links[news_counter] = news_link
+    for title in settings.SOURCES_LIST:
+        title_name = title['title']
+        parse_from_rss = feedparser.parse(title['source_link'])
+        for news_counter in reversed(range(0, 5)):
+            news = parse_from_rss.entries[news_counter]
+            news_link = news.link
+            if news_link not in title['check_links']:
+                pub_time = date_time_converter(news.published_parsed, 'Europe/Moscow')
+                news_title = news.title
+                news_short_link = google_short_url(news_link)
+                add_news = work.news_db_add_news(title_name, pub_time.get('date'),
+                                                 pub_time.get('time'), news_title,
+                                                 news_link, news_short_link)
+            title['check_links'][news_counter] = news_link
 
 
-def rbc_last_news(bot, counter, chat_id):
+def send_last_news(bot, counter, chat_id, title):
     text = ''
-    last_news = work.last_news(5, 'РБК')
+    last_news = work.last_news(counter, title)
     for news in last_news:
         text = text + news.news_title + '\n' + news.news_short_link + '\n'
     if text != '':
+        text = '<b>' + title + ':</b>' + '\n' + text
         bot.send_message(chat_id=chat_id,
-                         text=text, disable_web_page_preview=True)
+                         text=text,
+                         parse_mode='HTML',
+                         disable_web_page_preview=True)
 
 
-def sent_news(bot, job):
-    unsent_news = work.unsent_news_list('РБК')
-    news_counter = len(unsent_news)
-    now_time = datetime.now().strftime('%Y.%m.%d %H.%M.%S')
-    if news_counter > 5:
-        unsent_news = unsent_news[0:5]
-    if news_counter > 4:
-        text = ''
-        subscribers = work.subscribers_list('РБК')
-        subscribers.append('@rbknews1')
-        for news in unsent_news:
-            text = text + news.news_title + '\n' + news.news_short_link + '\n'
-        for sub in subscribers:
-            bot.send_message(chat_id=sub,
-                             text=text, disable_web_page_preview=True)
-        work.mark_sent_news(unsent_news)
-        with open('logs/sendnews.txt', "a") as local_file:
-            local_file.write('{}: News sent to {}\n'.format(now_time, subscribers))
-    else:
-        with open('logs/sendnews.txt', "a") as local_file:
-            local_file.write('{}: Not enough news\n{}\n'.format(now_time, unsent_news))
+def send_news(bot, job):
+    for title in settings.SOURCES_LIST:
+        title_name = title['title']
+        min_news = title['min_news']
+        unsent_news = work.unsent_news_list(title_name)
+        news_counter = len(unsent_news)
+        now_time = datetime.now().strftime('%Y.%m.%d %H.%M.%S')
+        if news_counter > settings.MAX_NEWS:
+            unsent_news = unsent_news[0:settings.MAX_NEWS]
+        if news_counter >= min_news:
+            text = ''
+            subscribers = work.subscribers_list(title_name)
+            if title_name == 'РБК':
+                pass
+                # subscribers.append('@rbknews1')  #включаем на сервере
+            for news in unsent_news:
+                text = text + news.news_title + '\n' + news.news_short_link + '\n'
+            text = '<b>' + title_name + ':</b>' + '\n' + text
+            for sub in subscribers:
+                bot.send_message(chat_id=sub,
+                                 text=text,
+                                 parse_mode='HTML',
+                                 disable_web_page_preview=True)
+            work.mark_sent_news(unsent_news)
+            with open('logs/sendnews.txt', "a") as local_file:
+                local_file.write('{}: {} News sent to {}\n'
+                                 .format(now_time, title_name, subscribers))
+        else:
+            with open('logs/sendnews.txt', "a") as local_file:
+                local_file.write('{}: {} Not enough news\n{}\n'
+                                 .format(now_time, title_name, unsent_news))
 
 
 def main():
@@ -165,7 +187,7 @@ def main():
 
     j = updater.job_queue
     job_collect_news = j.run_repeating(callback_collect_news, interval=180, first=0)
-    job_sent_news = j.run_repeating(sent_news, interval=180, first=0)
+    job_send_news = j.run_repeating(send_news, interval=180, first=0)
 
     updater.start_polling()
     updater.idle()

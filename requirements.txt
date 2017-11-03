@@ -1,4 +1,17 @@
-﻿# pip3 install python-telegram-bot  # библиотека по работе с Telegram
-# pip3 install pytz  # библиотека по работе с timezone
-# pip3 install sqlalchemy  # библиотека по работе с простыми БД SQL
-# pip3 install requests  # для запросов к Google API
+﻿certifi==2017.7.27.1
+chardet==3.0.4
+cycler==0.10.0
+feedparser==5.2.1
+future==0.16.0
+idna==2.6
+matplotlib==2.0.2
+numpy==1.13.3
+pycodestyle==2.3.1
+pyparsing==2.2.0
+python-dateutil==2.6.1
+python-telegram-bot==8.0  # библиотека по работе с Telegram
+pytz==2017.2  # библиотека по работе с timezone
+requests==2.18.4  # для запросов к Google API
+six==1.11.0
+SQLAlchemy==1.1.14  # библиотека по работе с простыми БД SQL
+urllib3==1.22

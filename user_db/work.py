@@ -68,11 +68,26 @@ def subscription_check(chat_id, title):
     return result
 
 
+def user_subscriptions(chat_id):
+    s = Subscription
+    subscriptions = s.query.filter(s.user_id == chat_id,
+                                   s.is_active == 1,
+                                   ).all()
+    if (subscriptions is None) or (len(subscriptions) == 0):
+        result = '<b>Действующих подписок нет</b>'
+    else:
+        result = ''
+        for subscription in subscriptions:
+            result = result + subscription.title + '\n'
+        result = 'Действующие подписки:\n<b>' + result + '</b>'
+    return result
+
+
 def subscribers_list(title):
     result = list()
     s = Subscription
     select = s.query.filter(s.title == title,
-                            s.is_active == 1
+                            s.is_active == 1,
                             ).all()
     for sub in select:
         result.append(sub.user_id)
@@ -82,7 +97,9 @@ def subscribers_list(title):
 def unsent_news_list(title):
     result = list()
     n = News
-    result = n.query.filter(n.is_sent == 0).order_by(n.date, n.time).all()
+    result = n.query.filter(n.is_sent == 0,
+                            n.title == title,
+                            ).order_by(n.date, n.time).all()
     return result
 
 
@@ -121,7 +138,7 @@ if __name__ == '__main__':
     # for subscription in subscriptions:
     #     username = u.query.filter(User.user_id == subscription.user_id).first()
     #     print(username.last_name)
-    
+
     # print(s)
     # subscriptions = s.query.all()
     # print(subscriptions)

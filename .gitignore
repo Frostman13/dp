@@ -1,21 +1,21 @@
 env/
 __pycache__/
+user_db/__init__.py
 
+# кэш папки data
 data/*.txt
 data/*.xml
 
+# кэш папки logs
 logs/*.txt
 logs/*.log
 
-user_db/__init__.py
-
+# секьюрные настройки
 settings_local.py
+
+# тестовые скрипты
 test*.py
 
+# не передаваемые на сервер тпы файлов
 *.png
 *.sqlite
-
-
-
-settings_alt.py
-sub_news.py
